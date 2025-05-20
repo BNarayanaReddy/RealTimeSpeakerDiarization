@@ -5,7 +5,11 @@ from diart.inference import StreamingInference
 from diart.sinks import RTTMWriter
 from pyannote.audio import Model
 from diart.models import SegmentationModel
-login(token="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") # HF API token
+import dotenv
+import os
+
+hf_api = os.getenv("HF_API_KEY")
+login(token=hf_api) # HF API token
 
 # performed by Diart Org. for AMI corpus dataset
 """
