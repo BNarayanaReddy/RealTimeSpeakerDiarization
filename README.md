@@ -1,22 +1,26 @@
 # Real-Time and Offline Speaker Diarization Through Robust Feature Fusion
 
+[![Hugging Face model](https://img.shields.io/badge/Hugging_Face-Model-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/BNarayanaReddy/wavlm-mfcc-speaker-segmentation)
+[![Paper: CICN 2025](https://img.shields.io/badge/Paper-CICN_2025-00629B?style=for-the-badge)](https://doi.org/10.1109/CICN67655.2025.11368116)
+[![Checkpoint license: CC BY 4.0](https://img.shields.io/badge/Checkpoint_License-CC_BY_4.0-22A7F0?style=for-the-badge)](https://creativecommons.org/licenses/by/4.0/)
+
 Up to **20.7% relative DER improvement over baseline** on AMI Headset-Mix: offline DER falls from **25.90% to 20.55%** with fine-tuned WavLM + MFCC feature fusion.
 
-Code and checkpoints for the CICN 2025 paper by L. N. R. Basireddy, BSM Rafi, and G. Lakshmi Shireesha. The paper studies speaker segmentation within the [Pyannote-Audio offline](https://www.isca-archive.org/interspeech_2023/bredin23_interspeech.html) and [Diart online](https://arxiv.org/abs/2109.06483) diarization pipelines to answer "who spoke when".
+This repo contains the code and checkpoints for our CICN 2025 paper, "Real-Time and Offline Speaker Diarization Through Robust Feature Fusion". We combine acoustic and self-supervised features for speaker segmentation in the [Pyannote-Audio offline](https://www.isca-archive.org/interspeech_2023/bredin23_interspeech.html) and [Diart online](https://arxiv.org/abs/2109.06483) diarization pipelines to answer "who spoke when".
 
 [Paper / DOI](https://doi.org/10.1109/CICN67655.2025.11368116) | [Hugging Face model](https://huggingface.co/BNarayanaReddy/wavlm-mfcc-speaker-segmentation)
 
 ## Approach
 
-**Baseline:** the [Pyannote speaker segmentation model](https://arxiv.org/abs/2104.04045), trained on AMI Headset-Mix and Vox Converse, serves as the paper's baseline. The 25.90% offline DER is for this trained baseline within the offline diarization pipeline, not an unspecified off-the-shelf model. The Diart rows in the online table are a separate pipeline comparison.
+**Baseline:** the [Pyannote speaker segmentation model](https://arxiv.org/abs/2104.04045), trained on AMI Headset-Mix and Vox Converse, is our baseline. The 25.90% offline DER is for this trained baseline within the offline diarization pipeline, not an unspecified off-the-shelf model. The Diart rows in the online table are a separate pipeline comparison.
 
-The proposed segmentation model concatenates self-supervised speech representations and MFCCs before the Bi-LSTM and classification networks (early fusion). The paper uses WavLM-Base and Wav2Vec2-Base feature extractors and 60-dimensional MFCC features. It also studies an ECAPA-TDNN Based variant that reuses frame-level features from the embedding extractor rather than loading a dedicated segmentation feature extractor.
+Our proposed segmentation model concatenates self-supervised speech representations and MFCCs before the Bi-LSTM and classification networks (early fusion). We use WavLM-Base and Wav2Vec2-Base feature extractors and 60-dimensional MFCC features. We also study an ECAPA-TDNN Based variant that reuses frame-level features from the embedding extractor rather than loading a dedicated segmentation feature extractor.
 
-The multi-stage pipelines combine speaker segmentation, embedding extraction, and clustering. Pyannote-Audio uses global agglomerative clustering offline; Diart uses incremental clustering online. The paper describes local segmentation over a 5-second window every 0.5 seconds, predicting frame-wise activity for up to three speakers with sigmoid outputs to handle overlap. These local speaker slots are not a three-speaker limit for the full recording.
+The multi-stage pipelines combine speaker segmentation, embedding extraction, and clustering. Pyannote-Audio uses global agglomerative clustering offline; Diart uses incremental clustering online. We perform local segmentation over a 5-second window every 0.5 seconds, predicting frame-wise activity for up to three speakers with sigmoid outputs to handle overlap. These local speaker slots are not a three-speaker limit for the full recording.
 
 ## Results
 
-DER is diarization error rate; lower is better. The paper evaluates on AMI Headset-Mix with strict scoring and no forgiveness collar. These are the paper's reported pipeline results, not a new evaluation of this release or a standalone segmentation metric.
+DER is diarization error rate; lower is better. We evaluate on AMI Headset-Mix with strict scoring and no forgiveness collar. These are our reported pipeline results, not a new evaluation of this release or a standalone segmentation metric.
 
 ### Offline: AMI Headset-Mix test set
 
@@ -65,7 +69,7 @@ These are segmentation models, not complete diarization pipelines. Speaker embed
 | Wav2Vec2-Base + MFCC | [`Wav2Vec_base+MFCC--epoch=37-DiarizationErrorRate=0.154341.ckpt`](https://drive.google.com/file/d/1-8knXepR-iMEg2WGpaz1pSBKJ4qgWRqH/view) | 404.3 MB | 23.14 |
 | Wav2Vec2-Base | [`Wav2Vec_base--epoch=61-DiarizationErrorRate=0.144130.ckpt`](https://drive.google.com/file/d/1DylOR3fummM0lQoeTzlpmYLdtVTUP6Za/view) | 403.5 MB | 25.34 |
 
-Only checkpoint variants corresponding to systems reported in Table I are listed. DER values are the paper's results for each system, not a new evaluation of these downloadable files. The paper's MFCCs system is included in the results table above; a corresponding MFCC-only checkpoint is not included in this checkpoint collection.
+Only checkpoint variants corresponding to systems reported in Table I are listed. DER values are our reported results for each system, not a new evaluation of these downloadable files. Our MFCCs system is included in the results table above; a corresponding MFCC-only checkpoint is not included in this checkpoint collection.
 
 **Recommended checkpoint:** fine-tuned WavLM + MFCC, epoch 25, the best offline configuration at 20.55% DER. The [Hugging Face repository](https://huggingface.co/BNarayanaReddy/wavlm-mfcc-speaker-segmentation) is dedicated to this checkpoint; its weights upload is pending. The other eight remain listed as Drive downloads. The current custom implementation targets WavLM + MFCC, so the other architectures may need their matching implementation before loading.
 
@@ -123,19 +127,19 @@ For file input, replace `MicrophoneAudioSource()` with `FileAudioSource(audio_pa
 
 To explore latency settings, change `latency` in `SpeakerDiarizationConfig`. Do not assume that changing latency alone reproduces Table II: checkpoint selection, thresholds, dataset preparation, and scoring must also match.
 
-## Reproduction scope
+## Included code
 
-This repository currently contains the custom segmentation model and a streaming inference entry point. It does not include the full training pipeline, offline evaluation driver, dataset preparation scripts, or exact commands and scoring settings for every table row. The instructions above describe the current code; they are not a claim that all paper results can be reproduced with one command. Release-time loading and inference checks are still pending.
+We provide the custom segmentation model and streaming inference entry point. The full training and offline evaluation scripts are not included.
 
-## Data and training reported in the paper
+## Data and training
 
 - Training used AMI Headset-Mix and Vox Converse, following the AMI-Diarization-setup protocol cited in the paper. The Vox Converse development set was split alphabetically: `abjxc` through `qouur` for training, with remaining files for validation.
-- The paper reports 37 hours of training data and extraction of 10 minutes of audio from each AMI WAV file. Evaluation used the AMI Headset-Mix test set.
+- We report 37 hours of training data and extraction of 10 minutes of audio from each AMI WAV file. Evaluation used the AMI Headset-Mix test set.
 - The baseline was trained for 100 epochs with Adam, early stopping, and dropout. The proposed models used a similar training setup.
 - Fine-tuning used `1e-5` for the pretrained WavLM-Base model and `1e-3` for the rest of the network. Both used cosine annealing learning-rate schedulers.
 - All models were trained on an NVIDIA RTX 3060 with 12 GB memory.
 
-These summarize Section IV; they are not a replacement for the missing training and evaluation scripts.
+These summarize our experimental setup in Section IV; they are not a replacement for the missing training and evaluation scripts.
 
 ## Citation
 
